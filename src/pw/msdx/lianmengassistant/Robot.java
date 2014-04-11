@@ -47,48 +47,6 @@ public class Robot {
     private static final int TOUCH_DELAY = 20;
 
     /**
-     * 屏幕宽，视手机而修改
-     */
-    private static final int SCREEN_WIDTH = 480;
-    /**
-     * 屏幕高，视手机而修改
-     */
-    private static final int SCREEN_HEIGHT = 800;
-
-    /**
-     * 左边距，视手机而修改
-     */
-    private static final int PADDING_LEFT = 48;
-    /**
-     * 右边距，视手机而修改
-     */
-    private static final int PADDING_RIGHT = 72;
-    /**
-     * 上边距，视手机而修改
-     */
-    private static final int PADDING_TOP = 115;
-    /**
-     * 下边距，视手机而修改
-     */
-    private static final int PADDING_BOTTOM = 115;
-    /**
-     * 游戏方块列数（竖屏情况下，因为截的图是竖屏）
-     */
-    private static final int BOX_COL = 5;
-    /**
-     * 游戏方块行数（竖屏情况下，因为截的图是竖屏）
-     */
-    private static final int BOX_ROW = 10;
-    /**
-     * 图片宽
-     */
-    private static final int IMAGE_WIDTH = (SCREEN_WIDTH - PADDING_LEFT - PADDING_RIGHT) / BOX_COL;
-    /**
-     * 图片高
-     */
-    private static final int IMAGE_HEIGHT = (SCREEN_HEIGHT - PADDING_TOP - PADDING_BOTTOM)
-            / BOX_ROW;
-    /**
      * 截除的边角宽，视手机而修改（主要是去除道具影响）
      */
     private static final int CORNER_WIDTH = 24;
@@ -96,50 +54,12 @@ public class Robot {
      * 截除的边角高，视手机而修改（主要是去除道具影响）
      */
     private static final int CORNER_HEIGHT = 27;
-
-    /**
-     * 数组行数。会比方块多两行是因为在进行连连看路径搜索时，需要增加顶部及底部一行。
-     */
-    private static final int CODE_ROW = 12;
-    /**
-     * 数组列数。会比方块多两列，原因如上。
-     */
-    private static final int CODE_COL = 7;
-
     /**
      * 表示每个方块图像的HASH值，视具体手机截取的图像而定。本次为HTC t528t下计算的结果。
      */
-    private static final String[] GAME_IMAGE = {
-            "0110000100110010101000110111110000010010101001110"/* 煎蛋 */,
-            "0000001100000000011110100101100110111100000110000"/* 紫猫 */,
-            "0010000101010101010100101110100000110101001101111"/* 白菜 */,
-            "0000001001101001100011100110101110010100000010011"/* 茄子 */,
-            "1001100100000101001100100111001100101110110100010"/* 兔子 */,
-            "1000010001000101111010100100100011010010111011000"/* 莲藕 */,
-            "0010010010100100101100110101100011011010010010001"/* 红虾 */,
-            "1000000000101000100010111000110000011001111011100"/* 玉米 */,
-            "0001100001100101101001010100111001101010110101100"/* 闪电 */,
-            "0000000000100001010100011111101010010000000100000"/* 狐狸 */,
-            "1100000101000000011110111011010011011100001100000"/* 白云 */,
-            "1000011000110101100000110100010001110011001100000"/* 菠萝 */,
-            "1000111001100101101010110100100001110110101011000"/* 草莓 */,
-            "0000000001110011100001000011001110111001001100110"/* 蘑菇 */,
-            "1111011000110100111001110100000101011000011100111"/* 蓝鼠 */,
-            "1000000000001000111100110000110011110000011011101"/* 太阳 */,
-            "1001100000001101100010111000110001010001110011100"/* 月亮 */,
-            "1011100000001110100100101100010100101001011011010"/* 雪人 */,
-            "1000011001101101011000111100101001111100011001100"/* 熊猫 */,
-            "1000000000000001010100001110101010111000010100000"/* 黄熊 */,
-            "1000000110100011001110111001100110001100001001011"/* 彩虹 */,
-            "1010100000001001001000101001010111011000111001000"/* 雪花 */,
-            "1000110001110001100010100000100111010100010010000"/* 西瓜 */,
-            "1000001101011000011110110001010011001001010110110"/* 香蕉 */,
-            "0001100000001101000001000000001100001001110100000"/* 蓝果实 */,
-            "1000100011101111010001000110001000000010010100110"/* 葡萄 */,
-            "0000100000011100110000101010100000111000101000111"/* 红果实 */,
-            "1001100000110001000110110011001110001011000110011"/* 黄梨 */, };
+    private static final String[] GAME_IMAGE = {};
 
-    private BufferedImage images[][] = new BufferedImage[BOX_ROW][BOX_COL];
+    private BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
     /**
      * 表示图片的数组，为12 * 7个。 图片共有10*5个单位，但是在进行路径计算的时候还要考虑四周，所以是12 * 7 个单位。
      */
@@ -184,32 +104,35 @@ public class Robot {
     /**
      * 该函数仅用来做一些测试，及获取方块的HASH值。并不在正式流程中调用。
      */
-    public void test(File file) {
+    public static void test(File file) {
+        int imageCodes[][] = new int[GameConfig.CODE_ROW][GameConfig.BOX_COL];
+        BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
+        System.out.println(file.getParent());
         try {
             System.out.println("test...");
             BufferedImage image = ImageIO.read(file);
 
             ImageHash p = new ImageHash();
-            for (int i = 0; i < images.length; i++) {
-                for (int j = 0; j < images[i].length; j++) {
-                    images[i][j] = image.getSubimage(j * IMAGE_WIDTH + PADDING_LEFT + 3, i
-                            * IMAGE_HEIGHT + PADDING_TOP + 3, IMAGE_WIDTH - CORNER_WIDTH - 3,
-                            IMAGE_HEIGHT - CORNER_HEIGHT - 3);
-                }
-            }
-            String gameHashs[] = new String[] { p.getHash(images[5][3]), p.getHash(images[1][0]),
-                    p.getHash(images[1][2]), p.getHash(images[2][0]), p.getHash(images[2][4]), };
-            for (String string : gameHashs) {
-                System.out.println(string);
-            }
+//            for (int i = 0; i < images.length; i++) {
+//                for (int j = 0; j < images[i].length; j++) {
+//                    images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
+//                            + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
+//                            + GameConfig.PADDING_TOP + 3,
+//                            GameConfig.IMAGE_WIDTH - CORNER_WIDTH - 3, GameConfig.IMAGE_HEIGHT
+//                                    - CORNER_HEIGHT - 3);
+//                }
+//            }
             long start = System.currentTimeMillis();
             for (int i = 0; i < images.length; i++) {
                 for (int j = 0; j < images[i].length; j++) {
-                    images[i][j] = image.getSubimage(j * IMAGE_WIDTH + PADDING_LEFT + 3, i
-                            * IMAGE_HEIGHT + PADDING_TOP + 3, IMAGE_WIDTH - CORNER_WIDTH - 3,
-                            IMAGE_HEIGHT - CORNER_HEIGHT - 3);
+                    images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
+                            + GameConfig.PADDING_LEFT, i * GameConfig.IMAGE_HEIGHT
+                            + GameConfig.PADDING_TOP, GameConfig.IMAGE_WIDTH,
+                            GameConfig.IMAGE_HEIGHT);
+                    ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + i + "-"
+                            + j + ".png"));
                     String hash = p.getHash(images[i][j]);
-                    // System.out.println(i + ":" + j + " " + hash);
+                    System.out.println(i + ":" + j + " " + hash);
                     int minDis = Integer.MAX_VALUE;
                     for (int k = 0; k < GAME_IMAGE.length; k++) {
                         int dis = p.distance(GAME_IMAGE[k], hash);
@@ -218,7 +141,7 @@ public class Robot {
                             minDis = dis;
                         }
                     }
-                    System.out.print(imageCodes[i][j] + " ");
+                    // System.out.print(imageCodes[i][j] + " ");
                 }
                 System.out.println();
             }
@@ -228,6 +151,8 @@ public class Robot {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println();
+        System.out.println();
     }
 
     /**
@@ -239,8 +164,8 @@ public class Robot {
     public void touch(Point p) throws InterruptedException {
         Thread.sleep(TOUCH_DELAY);
         // 截图使用的是竖屏，这里触摸使用的是横屏
-        int x = PADDING_TOP + (p.x - 1) * IMAGE_HEIGHT + CORNER_HEIGHT;
-        int y = 480 - (PADDING_LEFT + (p.y - 1) * IMAGE_WIDTH + CORNER_WIDTH);
+        int x = GameConfig.PADDING_TOP + (p.x - 1) * GameConfig.IMAGE_HEIGHT + CORNER_HEIGHT;
+        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * GameConfig.IMAGE_WIDTH + CORNER_WIDTH);
         mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
     }
 
@@ -248,12 +173,13 @@ public class Robot {
      * 通过获取的截图设置num数组
      */
     public void setNum(BufferedImage image) {
-        imageCodes = new int[CODE_ROW][CODE_COL];
+        imageCodes = new int[GameConfig.CODE_ROW][GameConfig.CODE_COL];
         for (int i = 0; i < images.length; i++) {
             for (int j = 0; j < images[i].length; j++) {
-                images[i][j] = image.getSubimage(j * IMAGE_WIDTH + PADDING_LEFT + 3, i
-                        * IMAGE_HEIGHT + PADDING_TOP + 3, IMAGE_WIDTH - CORNER_WIDTH - 3,
-                        IMAGE_HEIGHT - CORNER_HEIGHT - 3);
+                images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
+                        + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
+                        + GameConfig.PADDING_TOP + 3, GameConfig.IMAGE_WIDTH - CORNER_WIDTH - 3,
+                        GameConfig.IMAGE_HEIGHT - CORNER_HEIGHT - 3);
                 String hash = mImgHash.getHash(images[i][j]);
                 int minDis = Integer.MAX_VALUE;
                 for (int k = 0; k < GAME_IMAGE.length; k++) {
@@ -276,8 +202,8 @@ public class Robot {
         boolean anyClear = false;
         do {
             anyClear = false;
-            for (int i = 1; i < CODE_ROW - 1; i++) {
-                for (int j = 1; j < CODE_COL - 1; j++) {
+            for (int i = 1; i < GameConfig.CODE_ROW - 1; i++) {
+                for (int j = 1; j < GameConfig.CODE_COL - 1; j++) {
                     if (imageCodes[i][j] != 0) {
                         Point point = search(i, j);
                         if (point == null) {
@@ -303,8 +229,8 @@ public class Robot {
      * @return 当且仅当全部消除完毕时返回true，否则返回false。
      */
     private boolean isEmpty() {
-        for (int i = 1; i < CODE_ROW - 1; i++) {
-            for (int j = 1; j < CODE_COL - 1; j++) {
+        for (int i = 1; i < GameConfig.CODE_ROW - 1; i++) {
+            for (int j = 1; j < GameConfig.CODE_COL - 1; j++) {
                 if (imageCodes[i][j] != 0) {
                     return false;
                 }
@@ -357,7 +283,7 @@ public class Robot {
                 }
             }
             // 再拐右
-            for (int k = atCol + 1; k < CODE_COL - 1; k++) {
+            for (int k = atCol + 1; k < GameConfig.CODE_COL - 1; k++) {
                 if (datas[atRow][k] == datas[row][col]) {
                     return new Point(atRow, k);
                 } else if (datas[atRow][k] != 0) {
@@ -390,7 +316,7 @@ public class Robot {
                 }
             }
             // 再拐下
-            for (int k = atCol + 1; k < CODE_ROW - 1; k++) {
+            for (int k = atCol + 1; k < GameConfig.CODE_ROW - 1; k++) {
                 if (datas[k][atCol] == datas[row][col]) {
                     return new Point(k, atCol);
                 } else if (datas[k][atCol] != 0) {
@@ -434,7 +360,7 @@ public class Robot {
                     }
                 }
                 // 向左，然后拐下进行直角搜索
-                for (int j = x + 1; j < CODE_ROW; j++) {
+                for (int j = x + 1; j < GameConfig.CODE_ROW; j++) {
                     if (datas[j][i] == datas[x][y]) {
                         return new Point(j, i);
                     } else if (datas[j][i] != 0) {
@@ -448,7 +374,7 @@ public class Robot {
                 }
             }
             // 横向往右搜索
-            for (int i = y + 1, length = CODE_COL; i < length; i++) {
+            for (int i = y + 1, length = GameConfig.CODE_COL; i < length; i++) {
                 // 向右直线搜索
                 if (datas[x][i] == datas[x][y]) {
                     return new Point(x, i);
@@ -469,7 +395,7 @@ public class Robot {
                     }
                 }
                 // 向右，然后拐下进行直角搜索
-                for (int j = x + 1; j < CODE_ROW; j++) {
+                for (int j = x + 1; j < GameConfig.CODE_ROW; j++) {
                     if (datas[j][i] == datas[x][y]) {
                         return new Point(j, i);
                     } else if (datas[j][i] != 0) {
@@ -503,7 +429,7 @@ public class Robot {
                     }
                 }
                 // 向上，然后拐右进行直角搜索
-                for (int j = y + 1; j < CODE_COL; j++) {
+                for (int j = y + 1; j < GameConfig.CODE_COL; j++) {
                     if (datas[i][j] == datas[x][y]) {
                         return new Point(i, j);
                     } else if (datas[i][j] != 0) {
@@ -518,7 +444,7 @@ public class Robot {
                 }
             }
             // 纵向往下搜索
-            for (int i = x + 1, length = CODE_ROW; i < length; i++) {
+            for (int i = x + 1, length = GameConfig.CODE_ROW; i < length; i++) {
                 if (datas[i][y] == datas[x][y]) {
                     return new Point(i, y);
                 } else if (datas[i][y] != 0) {
@@ -538,7 +464,7 @@ public class Robot {
                     }
                 }
                 // 向下，然后拐右进行直角搜索
-                for (int j = y + 1; j < CODE_COL; j++) {
+                for (int j = y + 1; j < GameConfig.CODE_COL; j++) {
                     if (datas[i][j] == datas[x][y]) {
                         return new Point(i, j);
                     } else if (datas[i][j] != 0) {
