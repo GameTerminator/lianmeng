@@ -47,14 +47,6 @@ public class Robot {
     private static final int TOUCH_DELAY = 20;
 
     /**
-     * 截除的边角宽，视手机而修改（主要是去除道具影响）
-     */
-    private static final int CORNER_WIDTH = 24;
-    /**
-     * 截除的边角高，视手机而修改（主要是去除道具影响）
-     */
-    private static final int CORNER_HEIGHT = 27;
-    /**
      * 表示每个方块图像的HASH值，视具体手机截取的图像而定。本次为HTC t528t下计算的结果。
      */
     private static final String[] GAME_IMAGE = {};
@@ -113,15 +105,16 @@ public class Robot {
             BufferedImage image = ImageIO.read(file);
 
             ImageHash p = new ImageHash();
-//            for (int i = 0; i < images.length; i++) {
-//                for (int j = 0; j < images[i].length; j++) {
-//                    images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-//                            + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
-//                            + GameConfig.PADDING_TOP + 3,
-//                            GameConfig.IMAGE_WIDTH - CORNER_WIDTH - 3, GameConfig.IMAGE_HEIGHT
-//                                    - CORNER_HEIGHT - 3);
-//                }
-//            }
+            // for (int i = 0; i < images.length; i++) {
+            // for (int j = 0; j < images[i].length; j++) {
+            // images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
+            // + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
+            // + GameConfig.PADDING_TOP + 3,
+            // GameConfig.IMAGE_WIDTH - CORNER_WIDTH - 3,
+            // GameConfig.IMAGE_HEIGHT
+            // - CORNER_HEIGHT - 3);
+            // }
+            // }
             long start = System.currentTimeMillis();
             for (int i = 0; i < images.length; i++) {
                 for (int j = 0; j < images[i].length; j++) {
@@ -164,8 +157,9 @@ public class Robot {
     public void touch(Point p) throws InterruptedException {
         Thread.sleep(TOUCH_DELAY);
         // 截图使用的是竖屏，这里触摸使用的是横屏
-        int x = GameConfig.PADDING_TOP + (p.x - 1) * GameConfig.IMAGE_HEIGHT + CORNER_HEIGHT;
-        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * GameConfig.IMAGE_WIDTH + CORNER_WIDTH);
+        int x = GameConfig.PADDING_TOP + (p.x - 1) * GameConfig.IMAGE_HEIGHT
+                + GameConfig.CORNER_HEIGHT;
+        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * GameConfig.IMAGE_WIDTH + GameConfig.CORNER_WIDTH);
         mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
     }
 
@@ -178,8 +172,9 @@ public class Robot {
             for (int j = 0; j < images[i].length; j++) {
                 images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
                         + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
-                        + GameConfig.PADDING_TOP + 3, GameConfig.IMAGE_WIDTH - CORNER_WIDTH - 3,
-                        GameConfig.IMAGE_HEIGHT - CORNER_HEIGHT - 3);
+                        + GameConfig.PADDING_TOP + 3, GameConfig.IMAGE_WIDTH
+                        - GameConfig.CORNER_WIDTH - 3, GameConfig.IMAGE_HEIGHT
+                        - GameConfig.CORNER_HEIGHT - 3);
                 String hash = mImgHash.getHash(images[i][j]);
                 int minDis = Integer.MAX_VALUE;
                 for (int k = 0; k < GAME_IMAGE.length; k++) {

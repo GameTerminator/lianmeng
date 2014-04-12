@@ -34,8 +34,8 @@ public class Main {
     private static boolean isOver = false;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        splitBoxes();
-    //    loopSaveSnapshot();
+         splitBoxes();
+         loopSaveSnapshot();
     }
 
     public static void splitBoxes() {

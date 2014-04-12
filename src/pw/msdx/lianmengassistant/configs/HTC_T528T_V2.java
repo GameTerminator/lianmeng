@@ -18,9 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pw.msdx.lianmengassistant;
-
-import pw.msdx.lianmengassistant.configs.HTC_T528T_V1;
+package pw.msdx.lianmengassistant.configs;
 
 /**
  * @author Geek_Soledad <a target="_blank" href=
@@ -29,83 +27,62 @@ import pw.msdx.lianmengassistant.configs.HTC_T528T_V1;
  *         "http://rescdn.qqmail.com/zh_CN/htmledition/images/function/qm_open/ico_mailme_01.png"
  *         /></a>
  */
-public class GameConfig {
-    public static final Class<?> config = HTC_T528T_V1.class;
-    
-    private static final int getInt(String name) {
-        try {
-            return config.getDeclaredField(name).getInt(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        throw new IllegalArgumentException("could not load the config");
-    }
+public interface HTC_T528T_V2 {
     /**
      * 屏幕宽，视手机而修改
      */
-    public static final int SCREEN_WIDTH = getInt("SCREEN_WIDTH");
+    int SCREEN_WIDTH = 480;
     /**
      * 屏幕高，视手机而修改
      */
-    public static final int SCREEN_HEIGHT = getInt("SCREEN_HEIGHT");
+    int SCREEN_HEIGHT = 800;
 
     /**
      * 左边距，视手机而修改
      */
-    public static final int PADDING_LEFT = getInt("PADDING_LEFT");
+    int PADDING_LEFT = 48;
     /**
      * 右边距，视手机而修改
      */
-    public static final int PADDING_RIGHT = getInt("PADDING_RIGHT");
+    int PADDING_RIGHT = 40;
     /**
      * 上边距，视手机而修改
      */
-    public static final int PADDING_TOP = getInt("PADDING_TOP");
+    int PADDING_TOP = 152;
     /**
      * 下边距，视手机而修改
      */
-    public static final int PADDING_BOTTOM = getInt("PADDING_BOTTOM");
+    int PADDING_BOTTOM = 151;
     /**
      * 游戏方块列数（竖屏情况下，因为截的图是竖屏）
      */
-    public static final int BOX_COL = getInt("BOX_COL");
+    int BOX_COL = 7;
     /**
      * 游戏方块行数（竖屏情况下，因为截的图是竖屏）
      */
-    public static final int BOX_ROW = getInt("BOX_ROW");
+    int BOX_ROW = 7;
     /**
      * 数组行数。会比方块多两行是因为在进行连连看路径搜索时，需要增加顶部及底部一行。
      */
-    public static final int CODE_ROW = getInt("CODE_ROW");
+    int CODE_ROW = BOX_ROW + 2;
     /**
      * 数组列数。会比方块多两列，原因如上。
      */
-    public static final int CODE_COL = getInt("CODE_COL");
+    int CODE_COL = BOX_COL + 2;
     /**
      * 图片宽
      */
-    public static final int IMAGE_WIDTH = getInt("IMAGE_WIDTH");
+    int IMAGE_WIDTH = (SCREEN_WIDTH - PADDING_LEFT - PADDING_RIGHT) / BOX_COL;
     /**
      * 图片高
      */
-    public static final int IMAGE_HEIGHT = getInt("IMAGE_HEIGHT");
+    int IMAGE_HEIGHT = (SCREEN_HEIGHT - PADDING_TOP - PADDING_BOTTOM) / BOX_ROW;
     /**
      * 截除的边角宽，视手机而修改（主要是去除道具影响）
      */
-    public static final int CORNER_WIDTH = getInt("CORNER_WIDTH");
+    int CORNER_WIDTH = 24;
     /**
      * 截除的边角高，视手机而修改（主要是去除道具影响）
      */
-    public static final int CORNER_HEIGHT = getInt("CORNER_HEIGHT");
-    
-    public static final String[] GAME_IMAGE = getStringArray("GAME_IMAGE");
-    private static final String[] getStringArray(String name) {
-        try {
-            return (String[]) config.getDeclaredField(name).get(null);
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
-                | SecurityException e) {
-            e.printStackTrace();
-        }
-        throw new IllegalArgumentException("could not load the config");
-    }
+    int CORNER_HEIGHT = 27;
 }
