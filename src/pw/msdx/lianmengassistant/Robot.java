@@ -158,8 +158,8 @@ public class Robot {
         Thread.sleep(TOUCH_DELAY);
         // 截图使用的是竖屏，这里触摸使用的是横屏
         int x = GameConfig.PADDING_TOP + (p.x - 1) * GameConfig.IMAGE_HEIGHT
-                + GameConfig.CORNER_HEIGHT;
-        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * GameConfig.IMAGE_WIDTH + GameConfig.CORNER_WIDTH);
+                + GameConfig.PADDING_TOP;
+        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * GameConfig.IMAGE_WIDTH + GameConfig.CORNER_LEFT);
         mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
     }
 
@@ -171,10 +171,10 @@ public class Robot {
         for (int i = 0; i < images.length; i++) {
             for (int j = 0; j < images[i].length; j++) {
                 images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-                        + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
-                        + GameConfig.PADDING_TOP + 3, GameConfig.IMAGE_WIDTH
-                        - GameConfig.CORNER_WIDTH - 3, GameConfig.IMAGE_HEIGHT
-                        - GameConfig.CORNER_HEIGHT - 3);
+                        + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT, i
+                        * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP,
+                        GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT, GameConfig.IMAGE_HEIGHT
+                                - GameConfig.CORNER_BOTTOM);
                 String hash = mImgHash.getHash(images[i][j]);
                 int minDis = Integer.MAX_VALUE;
                 for (int k = 0; k < GAME_IMAGE.length; k++) {
