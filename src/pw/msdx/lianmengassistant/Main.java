@@ -34,7 +34,32 @@ public class Main {
     private static boolean isOver = false;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        testBox();
+         splitBoxes();
+         loopSaveSnapshot();
+    }
+
+    public static void splitBoxes() {
+        Robot.test(new File("E:\\tmp\\2014-03-24_21-56-55.png"));
+        System.exit(0);
+    }
+
+    public static void loopSaveSnapshot() {
+        final Robot robot = new Robot();
+        try {
+            while (true) {
+                BufferedImage img = robot.snapshot();
+                if (img != null) {
+                    File file = new File("E:\\tmp\\" + System.currentTimeMillis());
+                    ImageIO.write(img, "png", file);
+                    robot.test(file);
+                }
+                Thread.sleep(2000);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void testBox() {
