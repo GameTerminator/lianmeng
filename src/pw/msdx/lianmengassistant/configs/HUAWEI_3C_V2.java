@@ -27,7 +27,7 @@ package pw.msdx.lianmengassistant.configs;
  *         "http://rescdn.qqmail.com/zh_CN/htmledition/images/function/qm_open/ico_mailme_01.png"
  *         /></a>
  */
-public interface HTC_T528T_V2 {
+public interface HUAWEI_3C_V2 {
     /**
      * 屏幕宽，视手机而修改
      */

@@ -89,14 +89,6 @@ public class GameConfig {
      * 图片高
      */
     public static final int IMAGE_HEIGHT = getInt("IMAGE_HEIGHT");
-//    /**
-//     * 截除的边角宽，视手机而修改（主要是去除道具影响）
-//     */
-//    public static final int CORNER_WIDTH = getInt("CORNER_WIDTH");
-//    /**
-//     * 截除的边角高，视手机而修改（主要是去除道具影响）
-//     */
-//    public static final int CORNER_HEIGHT = getInt("CORNER_HEIGHT");
     /**
      * 截除的边角左边距
      */
