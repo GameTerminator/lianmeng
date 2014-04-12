@@ -34,8 +34,21 @@ public class Main {
     private static boolean isOver = false;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-         splitBoxes();
-         loopSaveSnapshot();
+        // splitBoxes();
+//        loopSaveSnapshot();
+         testForV2();
+    }
+
+    public static void testForV2() {
+        Robot robot = new Robot();
+        try {
+            while (true) {
+                robot.splitAndGetHashValue(new File("E:\\tmp\\"));
+                Thread.sleep(2000);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void splitBoxes() {
@@ -43,15 +56,18 @@ public class Main {
         System.exit(0);
     }
 
+    /**
+     * 循环保存截图。
+     */
     public static void loopSaveSnapshot() {
         final Robot robot = new Robot();
         try {
             while (true) {
                 BufferedImage img = robot.snapshot();
                 if (img != null) {
-                    File file = new File("E:\\tmp\\" + System.currentTimeMillis());
+                    File file = new File("E:\\tmp\\" + System.currentTimeMillis() + ".png");
                     ImageIO.write(img, "png", file);
-                    robot.test(file);
+                    // robot.test(file);
                 }
                 Thread.sleep(2000);
             }

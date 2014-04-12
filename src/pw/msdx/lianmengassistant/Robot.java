@@ -20,6 +20,7 @@
  */
 package pw.msdx.lianmengassistant;
 
+import java.awt.CheckboxGroup;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -94,10 +95,50 @@ public class Robot {
     }
 
     /**
+     * 截图，分离，并计算它的hash值及保存。
+     */
+    public void splitAndGetHashValue(File dir) {
+        // TODO
+        if (!dir.isDirectory()) {
+            throw new IllegalArgumentException("not a directory");
+        }
+        BufferedImage img = snapshot();
+        File imgDirFile = new File(dir.getPath() + File.separator + System.currentTimeMillis());
+        imgDirFile.mkdirs();
+        try {
+            ImageIO.write(img, "png",
+                    new File(imgDirFile.getPath() + File.separator + "parent.png"));
+            BufferedImage[][] images = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
+            ImageHash p = new ImageHash();
+            int repeat = 0;
+            for (int i = 0; i < images.length; i++) {
+                for (int j = 0; j < images[i].length; j++) {
+                    images[i][j] = img
+                            .getSubimage(
+                                    (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT),
+                                    (int) (i * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP),
+                                    (int) GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT,
+                                    (int) GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM);
+                    String hash = p.getHash(images[i][j]);
+                    File boxFile = new File(imgDirFile.getPath() + File.separator + hash + ".png");
+                    if (boxFile.exists()) {
+                        System.out.println(hash + "is exists");
+                        ImageIO.write(images[i][j], "png", new File(boxFile.getPath() + repeat + ".png"));
+                        repeat++;
+                    }
+                    ImageIO.write(images[i][j], "png", boxFile);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * 该函数仅用来做一些测试，及获取方块的HASH值。并不在正式流程中调用。
      */
     public static void test(File file) {
-        int imageCodes[][] = new int[GameConfig.CODE_ROW][GameConfig.BOX_COL];
+        int[][] imageCodes = new int[GameConfig.CODE_ROW][GameConfig.BOX_COL];
         BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
         System.out.println(file.getParent());
         try {
@@ -105,23 +146,13 @@ public class Robot {
             BufferedImage image = ImageIO.read(file);
 
             ImageHash p = new ImageHash();
-            // for (int i = 0; i < images.length; i++) {
-            // for (int j = 0; j < images[i].length; j++) {
-            // images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-            // + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
-            // + GameConfig.PADDING_TOP + 3,
-            // GameConfig.IMAGE_WIDTH - CORNER_WIDTH - 3,
-            // GameConfig.IMAGE_HEIGHT
-            // - CORNER_HEIGHT - 3);
-            // }
-            // }
             long start = System.currentTimeMillis();
             for (int i = 0; i < images.length; i++) {
                 for (int j = 0; j < images[i].length; j++) {
-                    images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-                            + GameConfig.PADDING_LEFT, i * GameConfig.IMAGE_HEIGHT
-                            + GameConfig.PADDING_TOP, GameConfig.IMAGE_WIDTH,
-                            GameConfig.IMAGE_HEIGHT);
+                    images[i][j] = image.getSubimage(
+                            (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT), (int) (i
+                                    * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP),
+                            (int) GameConfig.IMAGE_WIDTH, (int) GameConfig.IMAGE_HEIGHT);
                     ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + i + "-"
                             + j + ".png"));
                     String hash = p.getHash(images[i][j]);
@@ -157,9 +188,9 @@ public class Robot {
     public void touch(Point p) throws InterruptedException {
         Thread.sleep(TOUCH_DELAY);
         // 截图使用的是竖屏，这里触摸使用的是横屏
-        int x = GameConfig.PADDING_TOP + (p.x - 1) * GameConfig.IMAGE_HEIGHT
+        int x = GameConfig.PADDING_TOP + (p.x - 1) * (int) GameConfig.IMAGE_HEIGHT
                 + GameConfig.PADDING_TOP;
-        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * GameConfig.IMAGE_WIDTH + GameConfig.CORNER_LEFT);
+        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * (int) GameConfig.IMAGE_WIDTH + GameConfig.CORNER_LEFT);
         mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
     }
 
@@ -170,11 +201,12 @@ public class Robot {
         imageCodes = new int[GameConfig.CODE_ROW][GameConfig.CODE_COL];
         for (int i = 0; i < images.length; i++) {
             for (int j = 0; j < images[i].length; j++) {
-                images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-                        + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT, i
-                        * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP,
-                        GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT, GameConfig.IMAGE_HEIGHT
-                                - GameConfig.CORNER_BOTTOM);
+                images[i][j] = image
+                        .getSubimage(
+                                (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT),
+                                (int) (i * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP),
+                                (int) (GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT),
+                                (int) (GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM));
                 String hash = mImgHash.getHash(images[i][j]);
                 int minDis = Integer.MAX_VALUE;
                 for (int k = 0; k < GAME_IMAGE.length; k++) {

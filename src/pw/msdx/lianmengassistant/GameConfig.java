@@ -21,6 +21,7 @@
 package pw.msdx.lianmengassistant;
 
 import pw.msdx.lianmengassistant.configs.HTC_T528T_V1;
+import pw.msdx.lianmengassistant.configs.HUAWEI_3C_V2;
 
 /**
  * @author Geek_Soledad <a target="_blank" href=
@@ -30,7 +31,7 @@ import pw.msdx.lianmengassistant.configs.HTC_T528T_V1;
  *         /></a>
  */
 public class GameConfig {
-    public static final Class<?> config = HTC_T528T_V1.class;
+    public static final Class<?> config = HUAWEI_3C_V2.class;
     
     private static final int getInt(String name) {
         try {
@@ -39,6 +40,14 @@ public class GameConfig {
             e.printStackTrace();
         }
         throw new IllegalArgumentException("could not load the config");
+    }
+    private static final float getFloat(String name) {
+        try {
+            return config.getDeclaredField(name).getFloat(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return getInt(name);
+        }
     }
     /**
      * 屏幕宽，视手机而修改
@@ -84,11 +93,11 @@ public class GameConfig {
     /**
      * 图片宽
      */
-    public static final int IMAGE_WIDTH = getInt("IMAGE_WIDTH");
+    public static final float IMAGE_WIDTH = getFloat("IMAGE_WIDTH");
     /**
      * 图片高
      */
-    public static final int IMAGE_HEIGHT = getInt("IMAGE_HEIGHT");
+    public static final float IMAGE_HEIGHT = getFloat("IMAGE_HEIGHT");
     /**
      * 截除的边角左边距
      */
