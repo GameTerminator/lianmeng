@@ -35,8 +35,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // splitBoxes();
-//        loopSaveSnapshot();
-         testForV2();
+        // loopSaveSnapshot();
+        // testForV2();
+        playGame();
     }
 
     public static void testForV2() {
@@ -126,6 +127,7 @@ public class Main {
             System.out.println("snapTime:" + (System.currentTimeMillis() - snapTime));
             robot.setNum(img);
             if (robot.startSearch()) {
+                System.out.println("有清除");
                 lastClearTime = System.currentTimeMillis();
             }
             System.out.println("playTime:" + (System.currentTimeMillis() - snapTime));

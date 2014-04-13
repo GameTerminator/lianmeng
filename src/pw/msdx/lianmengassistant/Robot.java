@@ -20,7 +20,6 @@
  */
 package pw.msdx.lianmengassistant;
 
-import java.awt.CheckboxGroup;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -46,11 +45,6 @@ public class Robot {
      * 按键延迟时间。太小会导致手机卡，从而影响截图及后续的模拟按键。
      */
     private static final int TOUCH_DELAY = 20;
-
-    /**
-     * 表示每个方块图像的HASH值，视具体手机截取的图像而定。本次为HTC t528t下计算的结果。
-     */
-    private static final String[] GAME_IMAGE = {};
 
     private BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
     /**
@@ -95,10 +89,54 @@ public class Robot {
     }
 
     /**
+     * 该函数仅用来做一些测试，及获取方块的HASH值。并不在正式流程中调用。
+     */
+    public static void test(File file) {
+        int[][] imageCodes = new int[GameConfig.CODE_ROW][GameConfig.BOX_COL];
+        BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
+        System.out.println(file.getParent());
+        try {
+            System.out.println("test...");
+            BufferedImage image = ImageIO.read(file);
+
+            ImageHash p = new ImageHash();
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < images.length; i++) {
+                for (int j = 0; j < images[i].length; j++) {
+                    images[i][j] = image.getSubimage(
+                            (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT), (int) (i
+                                    * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP),
+                            (int) GameConfig.IMAGE_WIDTH, (int) GameConfig.IMAGE_HEIGHT);
+                    ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + i + "-"
+                            + j + ".png"));
+                    String hash = p.getHash(images[i][j]);
+                    System.out.println(i + ":" + j + " " + hash);
+                    int minDis = Integer.MAX_VALUE;
+                    for (int k = 0; k < GameConfig.GAME_IMAGE.length; k++) {
+                        int dis = p.distance(GameConfig.GAME_IMAGE[k], hash);
+                        if (dis < 5 && dis <= minDis) {
+                            imageCodes[i + 1][j + 1] = k + 1;
+                            minDis = dis;
+                        }
+                    }
+                    // System.out.print(imageCodes[i][j] + " ");
+                }
+                System.out.println();
+            }
+            System.out.println(System.currentTimeMillis() - start);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println();
+        System.out.println();
+    }
+
+    /**
      * 截图，分离，并计算它的hash值及保存。
      */
     public void splitAndGetHashValue(File dir) {
-        // TODO
         if (!dir.isDirectory()) {
             throw new IllegalArgumentException("not a directory");
         }
@@ -123,7 +161,8 @@ public class Robot {
                     File boxFile = new File(imgDirFile.getPath() + File.separator + hash + ".png");
                     if (boxFile.exists()) {
                         System.out.println(hash + "is exists");
-                        ImageIO.write(images[i][j], "png", new File(boxFile.getPath() + repeat + ".png"));
+                        ImageIO.write(images[i][j], "png", new File(boxFile.getPath() + repeat
+                                + ".png"));
                         repeat++;
                     }
                     ImageIO.write(images[i][j], "png", boxFile);
@@ -135,70 +174,12 @@ public class Robot {
     }
 
     /**
-     * 该函数仅用来做一些测试，及获取方块的HASH值。并不在正式流程中调用。
-     */
-    public static void test(File file) {
-        int[][] imageCodes = new int[GameConfig.CODE_ROW][GameConfig.BOX_COL];
-        BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
-        System.out.println(file.getParent());
-        try {
-            System.out.println("test...");
-            BufferedImage image = ImageIO.read(file);
-
-            ImageHash p = new ImageHash();
-            long start = System.currentTimeMillis();
-            for (int i = 0; i < images.length; i++) {
-                for (int j = 0; j < images[i].length; j++) {
-                    images[i][j] = image.getSubimage(
-                            (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT), (int) (i
-                                    * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP),
-                            (int) GameConfig.IMAGE_WIDTH, (int) GameConfig.IMAGE_HEIGHT);
-                    ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + i + "-"
-                            + j + ".png"));
-                    String hash = p.getHash(images[i][j]);
-                    System.out.println(i + ":" + j + " " + hash);
-                    int minDis = Integer.MAX_VALUE;
-                    for (int k = 0; k < GAME_IMAGE.length; k++) {
-                        int dis = p.distance(GAME_IMAGE[k], hash);
-                        if (dis < 5 && dis <= minDis) {
-                            imageCodes[i + 1][j + 1] = k + 1;
-                            minDis = dis;
-                        }
-                    }
-                    // System.out.print(imageCodes[i][j] + " ");
-                }
-                System.out.println();
-            }
-            System.out.println(System.currentTimeMillis() - start);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println();
-        System.out.println();
-    }
-
-    /**
-     * 触摸
-     * 
-     * @param p
-     * @throws InterruptedException
-     */
-    public void touch(Point p) throws InterruptedException {
-        Thread.sleep(TOUCH_DELAY);
-        // 截图使用的是竖屏，这里触摸使用的是横屏
-        int x = GameConfig.PADDING_TOP + (p.x - 1) * (int) GameConfig.IMAGE_HEIGHT
-                + GameConfig.PADDING_TOP;
-        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * (int) GameConfig.IMAGE_WIDTH + GameConfig.CORNER_LEFT);
-        mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
-    }
-
-    /**
      * 通过获取的截图设置num数组
      */
     public void setNum(BufferedImage image) {
         imageCodes = new int[GameConfig.CODE_ROW][GameConfig.CODE_COL];
+        File imgDirFile = new File("E:\\tmp" + File.separator + System.currentTimeMillis());
+        imgDirFile.mkdirs();
         for (int i = 0; i < images.length; i++) {
             for (int j = 0; j < images[i].length; j++) {
                 images[i][j] = image
@@ -208,9 +189,16 @@ public class Robot {
                                 (int) (GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT),
                                 (int) (GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM));
                 String hash = mImgHash.getHash(images[i][j]);
+                try {
+                    ImageIO.write(images[i][j], "png", new File(imgDirFile.getPath() + File.separator + hash + ".png"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(hash);
                 int minDis = Integer.MAX_VALUE;
-                for (int k = 0; k < GAME_IMAGE.length; k++) {
-                    int dis = mImgHash.distance(GAME_IMAGE[k], hash);
+                for (int k = 0; k < GameConfig.GAME_IMAGE.length; k++) {
+                    int dis = mImgHash.distance(GameConfig.GAME_IMAGE[k], hash);
+                    System.out.println("the distance....is " + dis + "k:" + k + "i" + i + "j" + j);
                     if (dis <= 8 && dis < minDis) {
                         imageCodes[i + 1][j + 1] = k + 1;
                         minDis = dis;
@@ -223,6 +211,21 @@ public class Robot {
             }
             // System.out.println();
         }
+    }
+
+    /**
+     * 触摸
+     * 
+     * @param p
+     * @throws InterruptedException
+     */
+    public void touch(Point p) throws InterruptedException {
+        Thread.sleep(TOUCH_DELAY);
+        // 截图使用的是竖屏，这里触摸使用的是横屏
+        int x = GameConfig.PADDING_TOP + (int) ((p.x - 1) * GameConfig.IMAGE_HEIGHT)
+                + GameConfig.PADDING_TOP;
+        int y = GameConfig.SCREEN_WIDTH - (GameConfig.PADDING_LEFT + (int) ((p.y - 1) * GameConfig.IMAGE_WIDTH) + GameConfig.CORNER_LEFT);
+        mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
     }
 
     public boolean startSearch() throws InterruptedException {
@@ -244,7 +247,9 @@ public class Robot {
                         System.out
                                 .println(String.format("消除 %d:%d  %d:%d", i, j, point.x, point.y));
                     }
+                    System.out.print(imageCodes[i][j] + " ");
                 }
+                System.out.println();
             }
         } while (anyClear && !isEmpty());
         return anyClear;
