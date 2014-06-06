@@ -103,14 +103,16 @@ public class Robot {
             long start = System.currentTimeMillis();
             for (int i = 0; i < images.length; i++) {
                 for (int j = 0; j < images[i].length; j++) {
-                    images[i][j] = image.getSubimage(
-                            (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT), (int) (i
-                                    * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP),
-                            (int) GameConfig.IMAGE_WIDTH, (int) GameConfig.IMAGE_HEIGHT);
-                    ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + i + "-"
-                            + j + ".png"));
+                    images[i][j] = image
+                            .getSubimage(
+                                    (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT),
+                                    (int) (i * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP),
+                                    (int) GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT,
+                                    (int) GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM);
                     String hash = p.getHash(images[i][j]);
                     System.out.println(i + ":" + j + " " + hash);
+                    ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + hash
+                            + ".png"));
                     int minDis = Integer.MAX_VALUE;
                     for (int k = 0; k < GameConfig.GAME_IMAGE.length; k++) {
                         int dis = p.distance(GameConfig.GAME_IMAGE[k], hash);
@@ -189,17 +191,18 @@ public class Robot {
                                 (int) (GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT),
                                 (int) (GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM));
                 String hash = mImgHash.getHash(images[i][j]);
-                try {
-                    ImageIO.write(images[i][j], "png", new File(imgDirFile.getPath() + File.separator + hash + ".png"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(hash);
+                // try {
+                // ImageIO.write(images[i][j], "png", new
+                // File(imgDirFile.getPath() + File.separator + hash + ".png"));
+                // } catch (IOException e) {
+                // e.printStackTrace();
+                // }
+//                System.out.println(hash);
                 int minDis = Integer.MAX_VALUE;
                 for (int k = 0; k < GameConfig.GAME_IMAGE.length; k++) {
                     int dis = mImgHash.distance(GameConfig.GAME_IMAGE[k], hash);
-                    System.out.println("the distance....is " + dis + "k:" + k + "i" + i + "j" + j);
-                    if (dis <= 8 && dis < minDis) {
+//                    System.out.println("the distance....is " + dis + "k:" + k + "i" + i + "j" + j);
+                    if (dis <= 5 && dis < minDis) {
                         imageCodes[i + 1][j + 1] = k + 1;
                         minDis = dis;
                         if (minDis <= 0) {
@@ -207,9 +210,9 @@ public class Robot {
                         }
                     }
                 }
-                // System.out.print(imageCodes[i + 1][j + 1] + "\t");
+                 System.out.print(imageCodes[i + 1][j + 1] + "\t");
             }
-            // System.out.println();
+             System.out.println();
         }
     }
 
@@ -221,10 +224,10 @@ public class Robot {
      */
     public void touch(Point p) throws InterruptedException {
         Thread.sleep(TOUCH_DELAY);
-        // 截图使用的是竖屏，这里触摸使用的是横屏
-        int x = GameConfig.PADDING_TOP + (int) ((p.x - 1) * GameConfig.IMAGE_HEIGHT)
-                + GameConfig.PADDING_TOP;
-        int y = GameConfig.SCREEN_WIDTH - (GameConfig.PADDING_LEFT + (int) ((p.y - 1) * GameConfig.IMAGE_WIDTH) + GameConfig.CORNER_LEFT);
+        int x = GameConfig.PADDING_LEFT + (int) ((p.x - 1) * GameConfig.IMAGE_WIDTH)
+                + GameConfig.PADDING_LEFT;
+        int y = GameConfig.SCREEN_HEIGHT
+                - (GameConfig.PADDING_TOP + (int) ((p.y - 1) * GameConfig.IMAGE_HEIGHT) + GameConfig.CORNER_TOP);
         mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
     }
 
