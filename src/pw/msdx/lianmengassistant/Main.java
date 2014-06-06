@@ -34,10 +34,10 @@ public class Main {
     private static boolean isOver = false;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // splitBoxes();
-        // loopSaveSnapshot();
-        // testForV2();
-        playGame();
+         splitBoxes();
+//         loopSaveSnapshot();
+//         testForV2();
+//        playGame();
     }
 
     public static void testForV2() {
@@ -53,7 +53,7 @@ public class Main {
     }
 
     public static void splitBoxes() {
-        Robot.test(new File("E:\\tmp\\2014-03-24_21-56-55.png"));
+        Robot.test(new File("E:\\tmp\\1402046313212\\parent.png"));
         System.exit(0);
     }
 
