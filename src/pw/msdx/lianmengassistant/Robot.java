@@ -46,11 +46,6 @@ public class Robot {
      */
     private static final int TOUCH_DELAY = 20;
 
-    /**
-     * 表示每个方块图像的HASH值，视具体手机截取的图像而定。本次为HTC t528t下计算的结果。
-     */
-    private static final String[] GAME_IMAGE = {};
-
     private BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
     /**
      * 表示图片的数组，为12 * 7个。 图片共有10*5个单位，但是在进行路径计算的时候还要考虑四周，所以是12 * 7 个单位。
@@ -97,7 +92,7 @@ public class Robot {
      * 该函数仅用来做一些测试，及获取方块的HASH值。并不在正式流程中调用。
      */
     public static void test(File file) {
-        int imageCodes[][] = new int[GameConfig.CODE_ROW][GameConfig.BOX_COL];
+        int[][] imageCodes = new int[GameConfig.CODE_ROW][GameConfig.BOX_COL];
         BufferedImage images[][] = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
         System.out.println(file.getParent());
         try {
@@ -105,30 +100,22 @@ public class Robot {
             BufferedImage image = ImageIO.read(file);
 
             ImageHash p = new ImageHash();
-            // for (int i = 0; i < images.length; i++) {
-            // for (int j = 0; j < images[i].length; j++) {
-            // images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-            // + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
-            // + GameConfig.PADDING_TOP + 3,
-            // GameConfig.IMAGE_WIDTH - CORNER_WIDTH - 3,
-            // GameConfig.IMAGE_HEIGHT
-            // - CORNER_HEIGHT - 3);
-            // }
-            // }
             long start = System.currentTimeMillis();
             for (int i = 0; i < images.length; i++) {
                 for (int j = 0; j < images[i].length; j++) {
-                    images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-                            + GameConfig.PADDING_LEFT, i * GameConfig.IMAGE_HEIGHT
-                            + GameConfig.PADDING_TOP, GameConfig.IMAGE_WIDTH,
-                            GameConfig.IMAGE_HEIGHT);
-                    ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + i + "-"
-                            + j + ".png"));
+                    images[i][j] = image
+                            .getSubimage(
+                                    (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT),
+                                    (int) (i * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP),
+                                    (int) GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT,
+                                    (int) GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM);
                     String hash = p.getHash(images[i][j]);
                     System.out.println(i + ":" + j + " " + hash);
+                    ImageIO.write(images[i][j], "png", new File(file.getParent() + "\\" + hash
+                            + ".png"));
                     int minDis = Integer.MAX_VALUE;
-                    for (int k = 0; k < GAME_IMAGE.length; k++) {
-                        int dis = p.distance(GAME_IMAGE[k], hash);
+                    for (int k = 0; k < GameConfig.GAME_IMAGE.length; k++) {
+                        int dis = p.distance(GameConfig.GAME_IMAGE[k], hash);
                         if (dis < 5 && dis <= minDis) {
                             imageCodes[i + 1][j + 1] = k + 1;
                             minDis = dis;
@@ -149,18 +136,43 @@ public class Robot {
     }
 
     /**
-     * 触摸
-     * 
-     * @param p
-     * @throws InterruptedException
+     * 截图，分离，并计算它的hash值及保存。
      */
-    public void touch(Point p) throws InterruptedException {
-        Thread.sleep(TOUCH_DELAY);
-        // 截图使用的是竖屏，这里触摸使用的是横屏
-        int x = GameConfig.PADDING_TOP + (p.x - 1) * GameConfig.IMAGE_HEIGHT
-                + GameConfig.CORNER_HEIGHT;
-        int y = 480 - (GameConfig.PADDING_LEFT + (p.y - 1) * GameConfig.IMAGE_WIDTH + GameConfig.CORNER_WIDTH);
-        mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
+    public void splitAndGetHashValue(File dir) {
+        if (!dir.isDirectory()) {
+            throw new IllegalArgumentException("not a directory");
+        }
+        BufferedImage img = snapshot();
+        File imgDirFile = new File(dir.getPath() + File.separator + System.currentTimeMillis());
+        imgDirFile.mkdirs();
+        try {
+            ImageIO.write(img, "png",
+                    new File(imgDirFile.getPath() + File.separator + "parent.png"));
+            BufferedImage[][] images = new BufferedImage[GameConfig.BOX_ROW][GameConfig.BOX_COL];
+            ImageHash p = new ImageHash();
+            int repeat = 0;
+            for (int i = 0; i < images.length; i++) {
+                for (int j = 0; j < images[i].length; j++) {
+                    images[i][j] = img
+                            .getSubimage(
+                                    (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT),
+                                    (int) (i * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP),
+                                    (int) GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT,
+                                    (int) GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM);
+                    String hash = p.getHash(images[i][j]);
+                    File boxFile = new File(imgDirFile.getPath() + File.separator + hash + ".png");
+                    if (boxFile.exists()) {
+                        System.out.println(hash + "is exists");
+                        ImageIO.write(images[i][j], "png", new File(boxFile.getPath() + repeat
+                                + ".png"));
+                        repeat++;
+                    }
+                    ImageIO.write(images[i][j], "png", boxFile);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -168,18 +180,29 @@ public class Robot {
      */
     public void setNum(BufferedImage image) {
         imageCodes = new int[GameConfig.CODE_ROW][GameConfig.CODE_COL];
+        File imgDirFile = new File("E:\\tmp" + File.separator + System.currentTimeMillis());
+        imgDirFile.mkdirs();
         for (int i = 0; i < images.length; i++) {
             for (int j = 0; j < images[i].length; j++) {
-                images[i][j] = image.getSubimage(j * GameConfig.IMAGE_WIDTH
-                        + GameConfig.PADDING_LEFT + 3, i * GameConfig.IMAGE_HEIGHT
-                        + GameConfig.PADDING_TOP + 3, GameConfig.IMAGE_WIDTH
-                        - GameConfig.CORNER_WIDTH - 3, GameConfig.IMAGE_HEIGHT
-                        - GameConfig.CORNER_HEIGHT - 3);
+                images[i][j] = image
+                        .getSubimage(
+                                (int) (j * GameConfig.IMAGE_WIDTH + GameConfig.PADDING_LEFT + GameConfig.CORNER_LEFT),
+                                (int) (i * GameConfig.IMAGE_HEIGHT + GameConfig.PADDING_TOP + GameConfig.CORNER_TOP),
+                                (int) (GameConfig.IMAGE_WIDTH - GameConfig.CORNER_RIGHT),
+                                (int) (GameConfig.IMAGE_HEIGHT - GameConfig.CORNER_BOTTOM));
                 String hash = mImgHash.getHash(images[i][j]);
+                // try {
+                // ImageIO.write(images[i][j], "png", new
+                // File(imgDirFile.getPath() + File.separator + hash + ".png"));
+                // } catch (IOException e) {
+                // e.printStackTrace();
+                // }
+//                System.out.println(hash);
                 int minDis = Integer.MAX_VALUE;
-                for (int k = 0; k < GAME_IMAGE.length; k++) {
-                    int dis = mImgHash.distance(GAME_IMAGE[k], hash);
-                    if (dis <= 8 && dis < minDis) {
+                for (int k = 0; k < GameConfig.GAME_IMAGE.length; k++) {
+                    int dis = mImgHash.distance(GameConfig.GAME_IMAGE[k], hash);
+//                    System.out.println("the distance....is " + dis + "k:" + k + "i" + i + "j" + j);
+                    if (dis <= 5 && dis < minDis) {
                         imageCodes[i + 1][j + 1] = k + 1;
                         minDis = dis;
                         if (minDis <= 0) {
@@ -187,10 +210,25 @@ public class Robot {
                         }
                     }
                 }
-                // System.out.print(imageCodes[i + 1][j + 1] + "\t");
+                 System.out.print(imageCodes[i + 1][j + 1] + "\t");
             }
-            // System.out.println();
+             System.out.println();
         }
+    }
+
+    /**
+     * 触摸
+     * 
+     * @param p
+     * @throws InterruptedException
+     */
+    public void touch(Point p) throws InterruptedException {
+        Thread.sleep(TOUCH_DELAY);
+        int x = GameConfig.PADDING_LEFT + (int) ((p.x - 1) * GameConfig.IMAGE_WIDTH)
+                + GameConfig.PADDING_LEFT;
+        int y = GameConfig.SCREEN_HEIGHT
+                - (GameConfig.PADDING_TOP + (int) ((p.y - 1) * GameConfig.IMAGE_HEIGHT) + GameConfig.CORNER_TOP);
+        mChimpDevice.touch(x, y, TouchPressType.DOWN_AND_UP);
     }
 
     public boolean startSearch() throws InterruptedException {
@@ -212,7 +250,9 @@ public class Robot {
                         System.out
                                 .println(String.format("消除 %d:%d  %d:%d", i, j, point.x, point.y));
                     }
+                    System.out.print(imageCodes[i][j] + " ");
                 }
+                System.out.println();
             }
         } while (anyClear && !isEmpty());
         return anyClear;

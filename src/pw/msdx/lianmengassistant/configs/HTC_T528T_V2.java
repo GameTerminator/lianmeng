@@ -78,11 +78,19 @@ public interface HTC_T528T_V2 {
      */
     int IMAGE_HEIGHT = (SCREEN_HEIGHT - PADDING_TOP - PADDING_BOTTOM) / BOX_ROW;
     /**
-     * 截除的边角宽，视手机而修改（主要是去除道具影响）
+     * 截除的边角左边距
      */
-    int CORNER_WIDTH = 24;
+    public static final int CORNER_LEFT = 3;
     /**
-     * 截除的边角高，视手机而修改（主要是去除道具影响）
+     * 截除的边角上边距
      */
-    int CORNER_HEIGHT = 27;
+    public static final int CORNER_TOP = 3;
+    /**
+     * 截除的边角右边距
+     */
+    public static final int CORNER_RIGHT = 3; 
+    /**
+     * 截除的边角下边距
+     */
+    public static final int CORNER_BOTTOM = 3;
 }
